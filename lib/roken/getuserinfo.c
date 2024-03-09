@@ -136,7 +136,7 @@ roken_get_homedir(char *home, size_t homesz)
         }
         return home;
     }
-    HEIM_FALLTHROUGH;
+    //HEIM_FALLTHROUGH; is this needed?
 #else
 #ifdef HAVE_GETPWNAM_R
     size_t buflen = 2048;

@@ -330,12 +330,12 @@
 ROKEN_CPP_START
 
 #ifndef IRIX4 /* fix for compiler bug */
-#ifndef _WIN32
+//#ifndef _WIN32
 #ifdef RETSIGTYPE
 typedef RETSIGTYPE (*SigAction)(int);
 SigAction signal(int iSig, SigAction pAction); /* BSD compatible */
 #endif
-#endif
+//#endif
 #endif
 
 #define SE_E_UNSPECIFIED (-1)
@@ -387,8 +387,14 @@ wait_for_process_timed(pid_t, time_t (*)(void *),
 		       void *, time_t);
 
 #define pipe_execv rk_pipe_execv
+#ifdef _WIN32
+ROKEN_LIB_FUNCTION pid_t ROKEN_LIB_CALL
+pipe_execv(FILE**, FILE**, FILE**, const char*, ...);
+
+#else
 ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
 pipe_execv(FILE**, FILE**, FILE**, const char*, ...);
+#endif
 
 #define print_version rk_print_version
 ROKEN_LIB_FUNCTION void ROKEN_LIB_CALL

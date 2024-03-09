@@ -36,6 +36,17 @@
 #include "roken.h"
 
 /* getaddrinfo via string specifying host and port */
+#ifdef MAXHOSTNAMELEN
+#define MAXHOSTNAMESIZE MAXHOSTNAMELEN
+#else
+  /*
+    Fallback for the maximum hostname size, including the null terminator. The
+    Windows gethostname() documentation states that 256 bytes will always be
+    large enough to hold the null-terminated hostname.
+  */
+#define MAXHOSTNAMESIZE 255
+#endif
+
 
 ROKEN_LIB_FUNCTION int ROKEN_LIB_CALL
 roken_getaddrinfo_hostspec2(const char *hostspec,
@@ -45,7 +56,7 @@ roken_getaddrinfo_hostspec2(const char *hostspec,
 {
     const char *p;
     char portstr[NI_MAXSERV];
-    char host[MAXHOSTNAMELEN];
+    char host[MAXHOSTNAMESIZE];
     struct addrinfo hints;
     int hostspec_len;
 

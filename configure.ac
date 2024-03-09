@@ -1,6 +1,6 @@
-dnl Process this file with autoconf to produce a configure script.
+gnl Process this file with autoconf to produce a configure script.
 AC_REVISION($Revision$)
-AC_PREREQ(2.62)
+AC_PREREQ([2.72])
 test -z "$CFLAGS" && CFLAGS="-g"
 AC_INIT([Heimdal],[7.99.1],[https://github.com/heimdal/heimdal/issues])
 AC_CONFIG_SRCDIR([kuser/kinit.c])
@@ -79,7 +79,7 @@ rk_VERSIONSCRIPT
 
 dnl Code coverage
 AC_ARG_ENABLE([gcov],
-        AC_HELP_STRING([--enable-gcov], [enable gcov code coverage tool]))
+        AS_HELP_STRING([--enable-gcov],[enable gcov code coverage tool]))
 AM_CONDITIONAL([ENABLE_GCOV], [test "x$enable_gcov" = xyes])
 
 
@@ -182,7 +182,7 @@ PKG_PROG_PKG_CONFIG
 
 dnl libcap-ng
 AC_ARG_WITH([capng],
-  AC_HELP_STRING([--with-capng], [use libcap-ng to drop KDC privileges @<:@default=check@:>@]),
+  AS_HELP_STRING([--with-capng],[use libcap-ng to drop KDC privileges @<:@default=check@:>@]),
   [],
   [with_capng=check])
 if test "$with_capng" != "no"; then
@@ -198,7 +198,7 @@ AC_SUBST([CAPNG_LIBS])
 
 dnl mitdb
 AC_ARG_WITH([mitdb],
-  AC_HELP_STRING([--with-mitdb], [Path to MIT Kerberos DB include header and shared object]),
+  AS_HELP_STRING([--with-mitdb],[Path to MIT Kerberos DB include header and shared object]),
   [],
   [with_mitdb=no])
 if test -n "$with_mitdb" -a -d "$with_mitdb"; then
@@ -216,7 +216,7 @@ AC_SUBST([MITDB], ["$with_mitdb"])
 
 dnl libmicrohttpd
 AC_ARG_WITH([microhttpd],
-  AC_HELP_STRING([--with-microhttpd], [use microhttpd to serve KDC REST API @<:@default=check@:>@]),
+  AS_HELP_STRING([--with-microhttpd],[use microhttpd to serve KDC REST API @<:@default=check@:>@]),
   [],
   [with_microhttpd=check])
 if test "$with_microhttpd" != "no"; then
@@ -232,7 +232,7 @@ AC_SUBST([MICROHTTPD_LIBS])
 
 dnl libcjwt
 AC_ARG_WITH([cjwt],
-  AC_HELP_STRING([--with-cjwt], [(Experimental) use cjwt to validate JWT tokens @<:@default=check@:>@]),
+  AS_HELP_STRING([--with-cjwt],[(Experimental) use cjwt to validate JWT tokens @<:@default=check@:>@]),
   [],
   [with_cjwt=check])
 if test "$with_cjwt" != "no"; then
@@ -248,7 +248,7 @@ AC_SUBST([CJWT_LIBS])
 
 dnl libcjson
 AC_ARG_WITH([cjson],
-  AC_HELP_STRING([--with-cjson], [(Experimental) use cJSON to extract private claims from JWT tokens @<:@default=check@:>@]),
+  AS_HELP_STRING([--with-cjson],[(Experimental) use cJSON to extract private claims from JWT tokens @<:@default=check@:>@]),
   [],
   [with_cjson=check])
 if test "$with_cjson" != "no"; then
@@ -264,7 +264,7 @@ AC_SUBST([CJSON_LIBS])
 
 dnl mitkrb5
 AC_ARG_WITH([mitkrb5],
-  AC_HELP_STRING([--with-mitkrb5], [Path to MIT Kerberos for interop testing @<:@default=check@:>@]),
+  AS_HELP_STRING([--with-mitkrb5],[Path to MIT Kerberos for interop testing @<:@default=check@:>@]),
   [],
   [with_mikrb5=check])
 AM_CONDITIONAL([MITKRB5], [test "$with_mitkrb5" != "no"])
@@ -405,7 +405,6 @@ rk_TEST_PACKAGE(libedit,
 #endif
 ],-ledit,,, READLINE,, [readline.h readline/readline.h editline/readline.h])
 
-AC_CONFIG_SUBDIRS([lib/libedit])
 
 KRB_C_BIGENDIAN
 AC_C_INLINE
@@ -418,11 +417,32 @@ AC_TYPE_OFF_T
 AC_CHECK_TYPE_EXTRA(mode_t, unsigned short, [])
 AC_CHECK_TYPE_EXTRA(sig_atomic_t, int, [#include <signal.h>])
 AC_HAVE_TYPE([long long])
-AC_HEADER_TIME
+m4_warn([obsolete],
+[Update your code to rely only on HAVE_SYS_TIME_H,
+then remove this warning and the obsolete code below it.
+All current systems provide time.h; it need not be checked for.
+Not all systems provide sys/time.h, but those that do, all allow
+you to include it and time.h simultaneously.])dnl
+AC_CHECK_HEADERS_ONCE([sys/time.h])
+# Obsolete code to be removed.
+if test $ac_cv_header_sys_time_h = yes; then
+  AC_DEFINE([TIME_WITH_SYS_TIME],[1],[Define to 1 if you can safely include both <sys/time.h>
+	     and <time.h>.  This macro is obsolete.])
+fi
+# End of obsolete code.
+
 AC_STRUCT_TM
 
 dnl Checks for header files.
-AC_HEADER_STDC
+m4_warn([obsolete],
+[The preprocessor macro 'STDC_HEADERS' is obsolete.
+  Except in unusual embedded environments, you can safely include all
+  C89 headers unconditionally.])dnl
+# Autoupdate added the next two lines to ensure that your configure
+# script's behavior did not change.  They are probably safe to remove.
+AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_EGREP
+
 
 AC_CHECK_HEADERS([\
 	CommonCrypto/CommonDigest.h		\
@@ -474,13 +494,26 @@ AC_CHECK_HEADERS([\
 	locale.h				\
 	termcap.h				\
 	termio.h				\
-	termios.h				\
 	time.h					\
 	tmpdir.h				\
 	udb.h					\
 	util.h					\
 ])
 
+case "$host_os" in
+  *mingw* | *cygwin* )
+    #AC_DEFINE([HAVE_TERMIOS_H], [0], ["Define to 1 if you have the `termios.h' header file"])
+    AC_MSG_NOTICE(["We don't have termios.h here, so we don't define it!"])
+    AC_DEFINE([HAVE_WINSOCK], [1], [Define to 1 if you have the `ws2tcpip.h' header.])
+    win32=yes
+    ;;
+  *)
+    AC_CHECK_HEADERS([termios.h])
+    AC_CONFIG_SUBDIRS([lib/libedit])
+    win32=no
+    ;;
+esac
+AM_CONDITIONAL(WIN32, test "x$win32" = "xyes")
 AC_CHECK_HEADERS([stdatomic.h],
     [AC_MSG_CHECKING([whether libatomic is required])
     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <stdatomic.h>]], [[_Atomic(long long) i; atomic_init(&i, (long long) 0);]])],

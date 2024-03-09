@@ -46,7 +46,13 @@
  *
  * Do we need any extra hacks for SIGCLD and/or SIGCHLD?
  */
-
+#ifdef _WIN32
+// Windows does not have sigaction, so we adapt to use signal in its place
+ROKEN_LIB_FUNCTION SigAction ROKEN_LIB_CALL
+signal(int iSig, SigAction pAction) {
+    return (SigAction)signal(iSig, (void (*)(int))pAction);
+}
+#else
 ROKEN_LIB_FUNCTION SigAction ROKEN_LIB_CALL
 signal(int iSig, SigAction pAction)
 {
@@ -74,4 +80,5 @@ signal(int iSig, SigAction pAction)
 
     return(saOld.sa_handler);
 }
+#endif
 #endif

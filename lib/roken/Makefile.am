@@ -173,7 +173,6 @@ libroken_la_SOURCES =		\
 	secure_getenv.h		\
 	setprogname.c		\
 	signal.c		\
-	simple_exec.c		\
 	snprintf.c		\
 	socket.c		\
 	strcollect.c		\
@@ -186,9 +185,15 @@ libroken_la_SOURCES =		\
 	$(vis_h)		\
 	vis-extras.h		\
 	warnerr.c		\
-	write_pid.c		\
 	xfree.c			\
 	xdbm.h
+
+if !WIN32
+libroken_la_SOURCES += simple_exec.c\
+	write_pid.c		
+else
+libroken_la_SOURCES += simple_exec_w32.c
+endif
 
 EXTRA_libroken_la_SOURCES =	\
 	err.hin			\
